@@ -318,11 +318,14 @@ class Orchestrator:
         # Export memory
         self.memory.export_to_json(os.path.join(self.output_dir, "project_memory.json"))
         
-        # Generate summary
+        # Generate summary (convert to serializable format)
+        arch_entry = self.memory.get_latest(MemoryType.ARCHITECTURE)
+        architecture = arch_entry.content if arch_entry else "N/A"
+        
         summary = {
             "goal": self.project_goal,
             "files_generated": len(code_entries) + len(tests),
-            "architecture": self.memory.get_latest(MemoryType.ARCHITECTURE),
+            "architecture": architecture,
             "output_directory": self.output_dir,
             "timestamp": datetime.now().isoformat(),
         }
