@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+from enum import Enum
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -19,10 +20,26 @@ sys.path.insert(0, str(Path(__file__).parent))
 from config import Config
 from orchestrator import Orchestrator
 
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for non-serializable objects."""
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        elif hasattr(obj, '__dict__'):
+            return str(obj)
+        elif isinstance(obj, (datetime, Path)):
+            return str(obj)
+        try:
+            return super().default(obj)
+        except TypeError:
+            return str(obj)
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['OUTPUT_FOLDER'] = 'output'
+app.json_encoder = CustomJSONEncoder
 
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -42,7 +59,11 @@ def index():
 def upload_files():
     """Handle file uploads."""
     if 'files' not in request.files:
-        return jsonify({'error': 'No files uploaded'}), 400
+        return Flask.response_class(
+            response=json.dumps({'error': 'No files uploaded'}, cls=CustomJSONEncoder),
+            status=400,
+            mimetype='application/json'
+        )
     
     files = request.files.getlist('files')
     uploaded = []
@@ -54,7 +75,11 @@ def upload_files():
             file.save(filepath)
             uploaded.append(filename)
     
-    return jsonify({'uploaded': uploaded, 'count': len(uploaded)})
+    return Flask.response_class(
+        response=json.dumps({'uploaded': uploaded, 'count': len(uploaded)}, cls=CustomJSONEncoder),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/run', methods=['POST'])
@@ -130,24 +155,51 @@ def run_agent():
         }
         jobs.insert(0, job)
         
-        return jsonify({
+        # Safely convert result to JSON-serializable format
+        safe_result = {}
+        if isinstance(result, dict):
+            for k, v in result.items():
+                try:
+                    json.dumps(v, cls=CustomJSONEncoder)
+                    safe_result[k] = v
+                except TypeError:
+                    safe_result[k] = str(v)
+        else:
+            safe_result = {'status': 'completed'}
+        
+        response = {
             'success': True,
             'job_id': timestamp,
             'files': generated_files,
-            'summary': result if isinstance(result, dict) else {'status': 'completed'}
-        })
+            'summary': safe_result
+        }
+        
+        return Flask.response_class(
+            response=json.dumps(response, cls=CustomJSONEncoder),
+            status=200,
+            mimetype='application/json'
+        )
         
     except Exception as e:
-        return jsonify({
+        error_response = {
             'success': False,
             'error': str(e)
-        }), 500
+        }
+        return Flask.response_class(
+            response=json.dumps(error_response, cls=CustomJSONEncoder),
+            status=500,
+            mimetype='application/json'
+        )
 
 
 @app.route('/jobs')
 def list_jobs():
     """List all job runs."""
-    return jsonify(jobs)
+    return Flask.response_class(
+        response=json.dumps(jobs, cls=CustomJSONEncoder),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/job/<job_id>')
@@ -155,8 +207,16 @@ def get_job(job_id):
     """Get details of a specific job."""
     for job in jobs:
         if job['id'] == job_id:
-            return jsonify(job)
-    return jsonify({'error': 'Job not found'}), 404
+            return Flask.response_class(
+                response=json.dumps(job, cls=CustomJSONEncoder),
+                status=200,
+                mimetype='application/json'
+            )
+    return Flask.response_class(
+        response=json.dumps({'error': 'Job not found'}, cls=CustomJSONEncoder),
+        status=404,
+        mimetype='application/json'
+    )
 
 
 @app.route('/files/<path:filename>')
@@ -187,7 +247,11 @@ def list_output():
                 'size': os.path.getsize(filepath)
             })
     
-    return jsonify(all_files)
+    return Flask.response_class(
+        response=json.dumps(all_files, cls=CustomJSONEncoder),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 if __name__ == '__main__':
