@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Output
+output/
+uploads/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Excel lock files
+~$*.xlsx
+~$*.xls
+
+# Node (for frontend)
+node_modules/
+build/
+dist/
+
+# Temp
+*.tmp
+*.temp

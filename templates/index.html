@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDLC Agent - AI Code Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --dark: #1e1e2e;
+            --darker: #11111b;
+            --light: #cdd6f4;
+            --surface: #313244;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(30, 30, 46, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--surface);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .navbar-brand i {
+            color: var(--primary);
+        }
+        
+        .main-container {
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+        }
+        
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Drop Zone */
+        .drop-zone {
+            border: 3px dashed var(--primary);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--secondary);
+            transform: scale(1.02);
+        }
+        
+        .drop-zone i {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .drop-zone p {
+            color: #888;
+            margin: 0;
+        }
+        
+        /* File List */
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-item i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+        }
+        
+        .file-item .file-name {
+            flex: 1;
+        }
+        
+        .file-item .file-size {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        /* Goal Input */
+        .goal-input {
+            background: var(--darker);
+            border: 2px solid var(--surface);
+            color: var(--light);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .goal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-outline-secondary {
+            border: 2px solid var(--surface);
+            color: var(--light);
+            border-radius: 12px;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: var(--surface);
+            border-color: var(--primary);
+        }
+        
+        /* Results Panel */
+        .results-panel {
+            background: var(--darker);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .file-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--surface);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .file-tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #888;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .file-tab:hover {
+            color: var(--light);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .file-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .code-viewer {
+            padding: 1rem;
+            max-height: 500px;
+            overflow: auto;
+        }
+        
+        .code-viewer pre {
+            margin: 0;
+            background: transparent !important;
+        }
+        
+        .code-viewer code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        /* Progress */
+        .progress-container {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--surface);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .phase-list {
+            text-align: left;
+            max-width: 400px;
+            margin: 1rem auto;
+        }
+        
+        .phase-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .phase-item i {
+            width: 30px;
+            text-align: center;
+        }
+        
+        .phase-item.completed i {
+            color: var(--secondary);
+        }
+        
+        .phase-item.active i {
+            color: var(--primary);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Stats */
+        .stat-card {
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(49, 50, 68, 0.5) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-card h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-card p {
+            color: #888;
+            margin: 0;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Provider Select */
+        .provider-select {
+            background: var(--darker);
+            border: 2px solid var(--surface);
+            color: var(--light);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .provider-select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        /* History */
+        .history-item {
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .history-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .history-item .time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot"></i> SDLC Agent
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <select id="provider" class="provider-select">
+                    <option value="mock">🧪 Mock (Demo)</option>
+                    <option value="openai">🤖 OpenAI GPT-4</option>
+                    <option value="anthropic">🧠 Anthropic Claude</option>
+                    <option value="waip">⚡ WAIP</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="row g-4">
+            <!-- Left Panel - Input -->
+            <div class="col-lg-5">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Files</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="drop-zone" id="dropZone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h4>Drag & Drop Files Here</h4>
+                            <p>or click to browse</p>
+                            <input type="file" id="fileInput" multiple hidden>
+                        </div>
+                        <div class="file-list mt-3" id="fileList"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>Project Goal</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="goal-input w-100 mb-3" id="goalInput" rows="4" 
+                            placeholder="Describe what you want to build...&#10;&#10;Example: Build a REST API for user management with authentication"></textarea>
+                        <button class="btn btn-primary w-100" id="runBtn" onclick="runAgent()">
+                            <i class="fas fa-play me-2"></i>Generate Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>History</h5>
+                        <span class="badge bg-primary" id="historyCount">0</span>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        <div id="historyList">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No runs yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Results -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-code me-2"></i>Generated Code</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadAll()">
+                            <i class="fas fa-download me-1"></i>Download All
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="resultsContainer">
+                            <div class="empty-state">
+                                <i class="fas fa-code"></i>
+                                <p>Generated code will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="row g-3 mt-3" id="statsRow" style="display: none;">
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <h2 id="statFiles">0</h2>
+                            <p>Files Generated</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <h2 id="statLines">0</h2>
+                            <p>Lines of Code</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <h2 id="statSize">0</h2>
+                            <p>Total Size (KB)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    
+    <script>
+        let uploadedFiles = [];
+        let generatedFiles = [];
+        let history = [];
+        
+        // Drop Zone Setup
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            for (let file of files) {
+                uploadedFiles.push(file);
+            }
+            renderFileList();
+            uploadFiles();
+        }
+        
+        function renderFileList() {
+            const container = document.getElementById('fileList');
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = uploadedFiles.map((file, i) => `
+                <div class="file-item">
+                    <i class="fas fa-file-code"></i>
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatSize(file.size)}</span>
+                    <button class="btn btn-sm text-danger" onclick="removeFile(${i})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderFileList();
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        async function uploadFiles() {
+            if (uploadedFiles.length === 0) return;
+            
+            const formData = new FormData();
+            uploadedFiles.forEach(file => formData.append('files', file));
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                console.log('Uploaded:', data);
+            } catch (error) {
+                console.error('Upload error:', error);
+            }
+        }
+        
+        async function runAgent() {
+            const goal = document.getElementById('goalInput').value.trim();
+            if (!goal) {
+                alert('Please enter a project goal');
+                return;
+            }
+            
+            const provider = document.getElementById('provider').value;
+            const runBtn = document.getElementById('runBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Show loading
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+            
+            resultsContainer.innerHTML = `
+                <div class="progress-container">
+                    <div class="spinner"></div>
+                    <h5>AI Agents Working...</h5>
+                    <div class="phase-list">
+                        <div class="phase-item active" id="phase-plan">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Planning & Analysis</span>
+                        </div>
+                        <div class="phase-item" id="phase-arch">
+                            <i class="fas fa-circle"></i>
+                            <span>Architecture Design</span>
+                        </div>
+                        <div class="phase-item" id="phase-dev">
+                            <i class="fas fa-circle"></i>
+                            <span>Development</span>
+                        </div>
+                        <div class="phase-item" id="phase-test">
+                            <i class="fas fa-circle"></i>
+                            <span>Testing</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Animate phases
+            setTimeout(() => updatePhase('phase-plan', 'phase-arch'), 1000);
+            setTimeout(() => updatePhase('phase-arch', 'phase-dev'), 2000);
+            setTimeout(() => updatePhase('phase-dev', 'phase-test'), 3000);
+            
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ goal, provider })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    generatedFiles = data.files || [];
+                    renderResults();
+                    addToHistory(goal, data);
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <p>Error: ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+            
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<i class="fas fa-play me-2"></i>Generate Code';
+        }
+        
+        function updatePhase(current, next) {
+            const currentEl = document.getElementById(current);
+            const nextEl = document.getElementById(next);
+            
+            if (currentEl) {
+                currentEl.classList.remove('active');
+                currentEl.classList.add('completed');
+                currentEl.querySelector('i').className = 'fas fa-check-circle';
+            }
+            
+            if (nextEl) {
+                nextEl.classList.add('active');
+                nextEl.querySelector('i').className = 'fas fa-spinner fa-spin';
+            }
+        }
+        
+        function renderResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            if (generatedFiles.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>Process completed! (Mock mode - no files generated)</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate stats
+            let totalLines = 0;
+            let totalSize = 0;
+            generatedFiles.forEach(f => {
+                totalLines += (f.content.match(/\n/g) || []).length + 1;
+                totalSize += f.size;
+            });
+            
+            document.getElementById('statsRow').style.display = 'flex';
+            document.getElementById('statFiles').textContent = generatedFiles.length;
+            document.getElementById('statLines').textContent = totalLines;
+            document.getElementById('statSize').textContent = (totalSize / 1024).toFixed(1);
+            
+            // Render tabs and content
+            container.innerHTML = `
+                <div class="results-panel">
+                    <div class="file-tabs" id="fileTabs">
+                        ${generatedFiles.map((f, i) => `
+                            <button class="file-tab ${i === 0 ? 'active' : ''}" onclick="showFile(${i})">
+                                <i class="fas ${getFileIcon(f.name)} me-1"></i>${getFileName(f.name)}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="code-viewer" id="codeViewer">
+                        <pre><code class="${getLanguageClass(generatedFiles[0].name)}">${escapeHtml(generatedFiles[0].content)}</code></pre>
+                    </div>
+                </div>
+            `;
+            
+            Prism.highlightAll();
+        }
+        
+        function showFile(index) {
+            const file = generatedFiles[index];
+            const viewer = document.getElementById('codeViewer');
+            const tabs = document.querySelectorAll('.file-tab');
+            
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            viewer.innerHTML = `<pre><code class="${getLanguageClass(file.name)}">${escapeHtml(file.content)}</code></pre>`;
+            Prism.highlightAll();
+        }
+        
+        function getFileName(path) {
+            return path.split(/[/\\]/).pop();
+        }
+        
+        function getFileIcon(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            const icons = {
+                'py': 'fa-python',
+                'js': 'fa-js',
+                'ts': 'fa-js',
+                'json': 'fa-brackets-curly',
+                'md': 'fa-markdown',
+                'html': 'fa-html5',
+                'css': 'fa-css3',
+                'yaml': 'fa-file-code',
+                'yml': 'fa-file-code'
+            };
+            return icons[ext] || 'fa-file-code';
+        }
+        
+        function getLanguageClass(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            const langs = {
+                'py': 'language-python',
+                'js': 'language-javascript',
+                'ts': 'language-typescript',
+                'json': 'language-json',
+                'md': 'language-markdown',
+                'yaml': 'language-yaml',
+                'yml': 'language-yaml',
+                'sh': 'language-bash',
+                'bash': 'language-bash'
+            };
+            return langs[ext] || 'language-plaintext';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function addToHistory(goal, data) {
+            const item = {
+                goal: goal,
+                time: new Date().toLocaleString(),
+                files: data.files || [],
+                job_id: data.job_id
+            };
+            history.unshift(item);
+            renderHistory();
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            document.getElementById('historyCount').textContent = history.length;
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No runs yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = history.map((item, i) => `
+                <div class="history-item" onclick="loadHistory(${i})">
+                    <div class="d-flex justify-content-between">
+                        <strong>${item.goal.substring(0, 40)}${item.goal.length > 40 ? '...' : ''}</strong>
+                        <span class="badge bg-primary">${item.files.length} files</span>
+                    </div>
+                    <div class="time">${item.time}</div>
+                </div>
+            `).join('');
+        }
+        
+        function loadHistory(index) {
+            const item = history[index];
+            document.getElementById('goalInput').value = item.goal;
+            generatedFiles = item.files;
+            renderResults();
+        }
+        
+        function downloadAll() {
+            if (generatedFiles.length === 0) {
+                alert('No files to download');
+                return;
+            }
+            
+            generatedFiles.forEach(file => {
+                const blob = new Blob([file.content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = getFileName(file.name);
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Load existing output on page load
+        async function loadExistingOutput() {
+            try {
+                const response = await fetch('/output');
+                const files = await response.json();
+                if (files.length > 0) {
+                    generatedFiles = files;
+                    renderResults();
+                }
+            } catch (error) {
+                console.log('No existing output');
+            }
+        }
+        
+        loadExistingOutput();
+    </script>
+</body>
+</html>
