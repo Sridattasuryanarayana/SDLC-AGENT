@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDLC Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef1f8 100%);
+            color: #1a2332;
+            min-height: 100vh;
+        }
+
+        .container-main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            grid-template-rows: auto 1fr;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e0e8f0;
+            box-shadow: 0 4px 12px rgba(26, 35, 50, 0.08);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title i {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #0a6dff 0%, #00a37c 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+
+        .header-title p {
+            font-size: 0.9rem;
+            color: #7a8a9e;
+            margin: 0.2rem 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .provider-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1.2rem;
+            background: #f5f7fa;
+            border-radius: 12px;
+            border: 1px solid #e0e8f0;
+        }
+
+        .provider-selector label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1a2332;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .provider-selector select {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: #0a6dff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .btn-run {
+            padding: 0.8rem 1.8rem;
+            background: linear-gradient(135deg, #0a6dff 0%, #0052cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(10, 109, 255, 0.3);
+        }
+
+        .btn-run:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(10, 109, 255, 0.4);
+        }
+
+        .btn-run:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e0e8f0;
+            box-shadow: 0 4px 12px rgba(26, 35, 50, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(26, 35, 50, 0.12);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 1.2rem;
+            border-bottom: 1px solid #e0e8f0;
+            background: #f8f9fc;
+        }
+
+        .card-header i {
+            font-size: 1.1rem;
+            color: #0a6dff;
+            width: 24px;
+            text-align: center;
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: #1a2332;
+        }
+
+        .card-body {
+            padding: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1a2332;
+            margin-bottom: 0.6rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e8f0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #1a2332;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0a6dff;
+            box-shadow: inset 0 0 0 3px rgba(10, 109, 255, 0.1);
+        }
+
+        .form-control.textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .mode-options {
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .mode-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #e0e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+
+        .mode-option:hover {
+            border-color: #0a6dff;
+            background: #f8faff;
+        }
+
+        .mode-option input[type="radio"] {
+            margin-right: 0.8rem;
+            cursor: pointer;
+            accent-color: #0a6dff;
+        }
+
+        .mode-option-content {
+            flex: 1;
+        }
+
+        .mode-option-title {
+            font-weight: 700;
+            color: #1a2332;
+            margin-bottom: 0.2rem;
+        }
+
+        .mode-option-desc {
+            font-size: 0.85rem;
+            color: #7a8a9e;
+        }
+
+        .mode-option.selected {
+            border-color: #0a6dff;
+            background: linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%);
+        }
+
+        .mode-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f7fa;
+        }
+
+        .mode-option.disabled:hover {
+            border-color: #e0e8f0;
+            background: #f5f7fa;
+        }
+
+        .mode-option.disabled input[type="radio"],
+        .mode-option.disabled .mode-option-content {
+            pointer-events: none;
+        }
+
+        .provider-selector select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: transparent;
+        }
+
+        .provider-selector option:disabled {
+            background: #f5f7fa;
+            color: #b0c0d8;
+        }
+
+        .upload-area {
+            border: 2px dashed #b0c0d8;
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #0a6dff;
+            background: #f0f5ff;
+        }
+
+        .upload-area i {
+            font-size: 2rem;
+            color: #0a6dff;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-area-text {
+            font-weight: 700;
+            color: #1a2332;
+            margin-bottom: 0.2rem;
+        }
+
+        .upload-area-hint {
+            font-size: 0.85rem;
+            color: #7a8a9e;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.7rem 0.9rem;
+            background: #f8f9fc;
+            border-radius: 8px;
+            border: 1px solid #e0e8f0;
+        }
+
+        .file-item i {
+            color: #0a6dff;
+            font-size: 0.95rem;
+        }
+
+        .file-item-name {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1a2332;
+            word-break: break-word;
+        }
+
+        .file-item-remove {
+            padding: 0.3rem 0.6rem;
+            background: #fff;
+            border: 1px solid #e0e8f0;
+            border-radius: 6px;
+            color: #7a8a9e;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .file-item-remove:hover {
+            background: #ffe5e5;
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .provider-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .provider-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 1px solid #e0e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .provider-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            flex: 1;
+        }
+
+        .provider-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .provider-status.configured {
+            background: #00a37c;
+            box-shadow: 0 0 8px rgba(0, 163, 124, 0.4);
+        }
+
+        .provider-status.not-configured {
+            background: #e3555b;
+            box-shadow: 0 0 8px rgba(227, 85, 91, 0.4);
+        }
+
+        .provider-name {
+            font-weight: 700;
+            color: #1a2332;
+            font-size: 0.95rem;
+        }
+
+        .provider-status-text {
+            font-size: 0.85rem;
+            color: #7a8a9e;
+            font-weight: 600;
+        }
+
+        .provider-status-text.configured {
+            color: #00a37c;
+        }
+
+        .provider-status-text.not-configured {
+            color: #e3555b;
+        }
+
+        .previous-runs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .previous-run-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem;
+            border: 1px solid #e0e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .previous-run-item:hover {
+            border-color: #0a6dff;
+            background: #f8faff;
+        }
+
+        .run-item-info {
+            flex: 1;
+        }
+
+        .run-item-time {
+            font-weight: 700;
+            color: #1a2332;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .run-item-count {
+            font-size: 0.8rem;
+            color: #7a8a9e;
+            margin-top: 0.2rem;
+        }
+
+        .run-item-badge {
+            padding: 0.3rem 0.7rem;
+            background: #edf4ff;
+            color: #0a6dff;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .output-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            gap: 1rem;
+        }
+
+        .output-empty i {
+            font-size: 3rem;
+            color: #b0c0d8;
+        }
+
+        .output-empty h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #7a8a9e;
+            margin: 0;
+        }
+
+        .output-empty p {
+            font-size: 0.9rem;
+            color: #a0b0c0;
+            margin: 0.3rem 0 0;
+        }
+
+        .code-files {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .code-block {
+            background: #ffffff;
+            border: 1px solid #e0e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 1rem 1.2rem;
+            background: #f8f9fc;
+            border-bottom: 1px solid #e0e8f0;
+            justify-content: space-between;
+        }
+
+        .code-block-title {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            flex: 1;
+        }
+
+        .code-block-icon {
+            font-size: 1.1rem;
+            color: #0a6dff;
+            width: 24px;
+            text-align: center;
+        }
+
+        .code-block-name {
+            font-weight: 700;
+            color: #1a2332;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        .code-block-size {
+            font-size: 0.8rem;
+            color: #7a8a9e;
+            font-weight: 500;
+        }
+
+        .code-content {
+            overflow-x: auto;
+            background: #1a1f2e;
+        }
+
+        .code-content pre {
+            margin: 0;
+            padding: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #e0e8f0;
+            line-height: 1.5;
+        }
+
+        .code-content code {
+            all: revert;
+        }
+
+        .explanation-block {
+            background: #ffffff;
+            border: 1px solid #e0e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .explanation-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2332;
+            margin-bottom: 1rem;
+        }
+
+        .explanation-content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #4a5a6f;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Workflow Pipeline Styles */
+        .workflow-status {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+            border: 1px solid #c5d5ea;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .workflow-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .workflow-title i { margin-right: 6px; }
+        .workflow-steps {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 0.75rem;
+        }
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e0e0e0;
+            color: #666;
+        }
+        .workflow-step.done {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        .workflow-step i { font-size: 0.7rem; }
+        .workflow-arrow {
+            color: #aaa;
+            font-size: 0.6rem;
+        }
+        .workflow-details {
+            border-top: 1px solid #d0dae8;
+            padding-top: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .workflow-detail {
+            font-size: 0.8rem;
+            color: #37474f;
+        }
+        .workflow-detail i {
+            width: 16px;
+            margin-right: 4px;
+            color: #5c6bc0;
+        }
+        .workflow-detail a {
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .workflow-detail a:hover { text-decoration: underline; }
+
+        .stats-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e8f0;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7a8a9e;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0a6dff;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e0e8f0;
+            border-top-color: #0a6dff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-weight: 600;
+            color: #7a8a9e;
+        }
+
+        .btn-download {
+            padding: 0.7rem 1.5rem;
+            background: #f8f9fc;
+            border: 1px solid #e0e8f0;
+            border-radius: 10px;
+            color: #0a6dff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-download:hover {
+            background: #f0f5ff;
+            border-color: #0a6dff;
+        }
+
+        .btn-back {
+            color: #1a2332;
+            background: #ffffff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .container-main {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .header {
+                flex-wrap: wrap;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #d0dce8;
+            border-radius: 3px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #b0c0d8;
+        }
+
+        .file-list, .code-files {
+            scrollbar-width: thin;
+            scrollbar-color: #d0dce8 transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-main">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <i class="fas fa-rocket"></i>
+                <div>
+                    <h1>SDLC Agent</h1>
+                    <p>Generate & Enhance Code with AI</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="provider-selector">
+                    <label for="providerSelect">Provider:</label>
+                    <select id="providerSelect">
+                        <option value="">Auto-Select</option>
+                    </select>
+                </div>
+                <button class="btn-run" id="runBtn" disabled>
+                    <i class="fas fa-play"></i> Run
+                </button>
+            </div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Mode Selection -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cog"></i>
+                    <h3>Execution Mode</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Select Mode</label>
+                        <div class="mode-options" id="modeOptions"></div>
+                    </div>
+
+                    <div class="form-group" id="taskGroup" style="display: none;">
+                        <label class="form-label" for="taskSelect">Select Task</label>
+                        <select id="taskSelect" class="form-control">
+                            <option value="">-- Choose a task --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="goalInput">Goal or Question</label>
+                        <textarea id="goalInput" class="form-control textarea" placeholder="Enter your requirement or question..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-upload"></i>
+                    <h3>Upload Files</h3>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="upload-area-text">Drag & Drop Files</div>
+                        <div class="upload-area-hint">or click to browse</div>
+                    </div>
+                    <div class="file-list scrollbar-thin" id="fileList"></div>
+                </div>
+            </div>
+
+            <!-- Provider Availability -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-plug"></i>
+                    <h3>Provider Availability</h3>
+                </div>
+                <div class="card-body">
+                    <div class="provider-list" id="providerList"></div>
+                </div>
+            </div>
+
+            <!-- Previous Runs -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-history"></i>
+                    <h3>Previous Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="previous-runs-list" id="previousRunsList">
+                        <div style="text-align: center; color: #7a8a9e; font-size: 0.9rem; padding: 1rem;">
+                            <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="card output-card">
+                <div class="card-header">
+                    <i class="fas fa-code"></i>
+                    <h3>Results</h3>
+                    <button class="btn-download btn-back" id="backToCurrentBtn" style="margin-left: auto; margin-right: 0.6rem; display: none;">
+                        <i class="fas fa-arrow-left"></i> Back to Current
+                    </button>
+                    <button class="btn-download" id="downloadBtn" onclick="downloadResults()" style="display: none;">
+                        <i class="fas fa-download"></i> Download All
+                    </button>
+                </div>
+                <div class="card-body" style="flex: 1; overflow-y: auto;">
+                    <div id="outputContainer">
+                        <div class="output-empty">
+                            <i class="fas fa-inbox"></i>
+                            <h4>No Results Yet</h4>
+                            <p>Select a mode and click Run to generate code</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script>
+        const state = {
+            selectedMode: null,
+            selectedProvider: null,
+            uploadedFiles: [],
+            capabilities: null,
+            liveResultData: null,
+            viewingPreviousRun: false,
+        };
+
+        function renderDefaultOutput(message = 'Select a mode and click Run to generate code') {
+            const output = document.getElementById('outputContainer');
+            output.innerHTML = `
+                <div class="output-empty">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No Results Yet</h4>
+                    <p>${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        async function parseJsonResponse(response) {
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned non-JSON response (${response.status}). ${text.slice(0, 180)}`);
+            }
+            return response.json();
+        }
+
+        function setBackButtonVisibility(visible) {
+            const button = document.getElementById('backToCurrentBtn');
+            button.style.display = visible ? 'inline-block' : 'none';
+        }
+
+        function backToCurrentView() {
+            state.viewingPreviousRun = false;
+            setBackButtonVisibility(false);
+
+            if (state.liveResultData) {
+                renderResults(state.liveResultData);
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('downloadBtn').style.display = 'none';
+                renderDefaultOutput();
+            }
+        }
+
+        // Load capabilities on page load
+        async function bootstrap() {
+            try {
+                const res = await fetch('/capabilities');
+                state.capabilities = await res.json();
+
+                // Populate provider dropdown
+                const providerSelect = document.getElementById('providerSelect');
+                Object.entries(state.capabilities.providers).forEach(([name, info]) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = info.configured ? name : name + ' (Not Available)';
+                    if (!info.configured) {
+                        opt.disabled = true;
+                        opt.style.opacity = '0.6';
+                    }
+                    providerSelect.appendChild(opt);
+                });
+
+                // Render mode cards
+                const modeOptions = document.getElementById('modeOptions');
+                state.capabilities.modes.forEach(mode => {
+                    const label = document.createElement('label');
+                    label.className = 'mode-option';
+                    label.setAttribute('data-mode', mode.id);
+                    label.innerHTML = `
+                        <input type="radio" name="mode" value="${mode.id}" />
+                        <div class="mode-option-content">
+                            <div class="mode-option-title">${mode.label}</div>
+                            <div class="mode-option-desc">${mode.description}</div>
+                        </div>
+                    `;
+                    label.addEventListener('change', (e) => {
+                        if (e.target.checked && !label.classList.contains('disabled')) {
+                            selectMode(mode.id, label);
+                        }
+                    });
+                    label.addEventListener('click', (e) => {
+                        if (label.classList.contains('disabled')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+                    modeOptions.appendChild(label);
+                    updateModeAvailability();
+                });
+
+                // Populate task select — fetch from /tasks endpoint
+                try {
+                    const tasksRes = await fetch('/tasks');
+                    const tasksData = await tasksRes.json();
+                    if (tasksData.success && tasksData.tasks && tasksData.tasks.length > 0) {
+                        state.capabilities.tasks = tasksData.tasks;
+                        tasksData.tasks.forEach(task => {
+                            const opt = document.createElement('option');
+                            opt.value = task.id;
+                            opt.textContent = `${task.id}: ${task.title} [${task.priority}] (${task.target_component})`;
+                            taskSelect.appendChild(opt);
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Could not load tasks:', e);
+                }
+
+                // Render provider list
+                renderProviderList();
+
+                // Load previous runs
+                loadPreviousRuns();
+
+                // Setup upload handler
+                setupUploadHandler();
+
+            } catch (error) {
+                console.error('Error loading capabilities:', error);
+            }
+        }
+
+        function selectMode(modeId, labelEl) {
+            state.selectedMode = modeId;
+            document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
+            labelEl.classList.add('selected');
+
+            const taskGroup = document.getElementById('taskGroup');
+            taskGroup.style.display = modeId === 'task' ? 'block' : 'none';
+
+            // Update placeholder and label based on mode
+            updateGoalPlaceholder(modeId);
+            updateRunButton();
+        }
+
+        function updateGoalPlaceholder(modeId) {
+            const goalInput = document.getElementById('goalInput');
+            const goalLabel = document.querySelector('label[for="goalInput"]');
+            
+            const placeholders = {
+                'develop': 'Describe the feature or system you want to build...',
+                'enhance': 'Describe the improvements or changes you want to make...\n\nRAG analysis will preserve existing patterns while making targeted enhancements.',
+                'explain': 'Ask a question about the uploaded code (e.g., "How does authentication work?" or "Explain the data flow")...\n\nRAG/Transformer analysis will extract: classes, functions, imports, dependencies, and architectural patterns.',
+                'task': 'Additional context for the selected task...'
+            };
+            
+            const labels = {
+                'develop': 'Goal / Requirement',
+                'enhance': 'Enhancement Request (RAG)',
+                'explain': 'Question for RAG Analysis',
+                'task': 'Task Context'
+            };
+            
+            goalInput.placeholder = placeholders[modeId] || placeholders['develop'];
+            if (goalLabel) {
+                goalLabel.textContent = labels[modeId] || labels['develop'];
+            }
+        }
+
+        function renderProviderList() {
+            const list = document.getElementById('providerList');
+            list.innerHTML = '';
+            Object.entries(state.capabilities.providers).forEach(([name, info]) => {
+                const item = document.createElement('div');
+                item.className = 'provider-item';
+                const statusClass = info.configured ? 'configured' : 'not-configured';
+                const statusText = info.configured ? 'Configured' : 'Missing Key';
+                item.innerHTML = `
+                    <div class="provider-item-left">
+                        <div class="provider-status ${statusClass}"></div>
+                        <span class="provider-name">${name}</span>
+                    </div>
+                    <span class="provider-status-text ${statusClass}">${statusText}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function loadPreviousRuns() {
+            try {
+                const res = await fetch('/previous-runs');
+                const data = await parseJsonResponse(res);
+                const listContainer = document.getElementById('previousRunsList');
+                
+                if (!data.runs || data.runs.length === 0) {
+                    listContainer.innerHTML = `
+                        <div style="text-align: center; color: #7a8a9e; font-size: 0.9rem; padding: 1rem;">
+                            <i class="fas fa-inbox" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                            No previous results
+                        </div>
+                    `;
+                    return;
+                }
+                
+                listContainer.innerHTML = '';
+                data.runs.forEach(run => {
+                    const item = document.createElement('div');
+                    item.className = 'previous-run-item';
+                    const [date, time] = run.timestamp.replace(/_/g, ' ').split(' ');
+                    item.innerHTML = `
+                        <div class="run-item-info">
+                            <div class="run-item-time">${time}</div>
+                            <div class="run-item-count">${run.file_count} files</div>
+                        </div>
+                        <div class="run-item-badge">${date}</div>
+                    `;
+                    item.addEventListener('click', () => loadPreviousRunResults(run.id));
+                    listContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading previous runs:', error);
+            }
+        }
+
+        async function loadPreviousRunResults(runId) {
+            try {
+                const res = await fetch(`/previous-run/${runId}`);
+                const data = await parseJsonResponse(res);
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Could not load previous result.');
+                }
+
+                state.viewingPreviousRun = true;
+                setBackButtonVisibility(true);
+                
+                const output = document.getElementById('outputContainer');
+                output.innerHTML = '';
+                
+                if (data.files && data.files.length > 0) {
+                    const stats = document.createElement('div');
+                    stats.className = 'stats-row';
+                    stats.innerHTML = `
+                        <div class="stat-item">
+                            <div class="stat-label">Files</div>
+                            <div class="stat-value">${data.files.length}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Lines</div>
+                            <div class="stat-value">${data.total_lines}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Size</div>
+                            <div class="stat-value">${formatBytes(data.total_size)}</div>
+                        </div>
+                    `;
+                    output.appendChild(stats);
+                    
+                    const filesDiv = document.createElement('div');
+                    filesDiv.className = 'code-files';
+                    data.files.forEach(file => {
+                        const block = document.createElement('div');
+                        block.className = 'code-block';
+                        const icon = getFileIcon(file.name);
+                        block.innerHTML = `
+                            <div class="code-block-header">
+                                <div class="code-block-title">
+                                    <i class="fas ${icon}"></i>
+                                    <span class="code-block-name">${file.name}</span>
+                                    <span class="code-block-size">${formatBytes(file.size)}</span>
+                                </div>
+                            </div>
+                            <div class="code-content">
+                                <pre><code class="language-${getLanguage(file.name)}">${escapeHtml(file.content)}</code></pre>
+                            </div>
+                        `;
+                        filesDiv.appendChild(block);
+                    });
+                    output.appendChild(filesDiv);
+                    Prism.highlightAllUnder(output);
+                }
+            } catch (error) {
+                console.error('Error loading previous run results:', error);
+            }
+        }
+
+        function updateModeAvailability() {
+            const provider = document.getElementById('providerSelect').value;
+            const providerConfigured = provider && state.capabilities.providers[provider]?.configured;
+
+            document.querySelectorAll('.mode-option').forEach(label => {
+                if (!provider || !providerConfigured) {
+                    label.classList.add('disabled');
+                    label.querySelector('input[type="radio"]').disabled = true;
+                } else {
+                    label.classList.remove('disabled');
+                    label.querySelector('input[type="radio"]').disabled = false;
+                }
+            });
+        }
+
+        function updateRunButton() {
+            const btn = document.getElementById('runBtn');
+            const goal = document.getElementById('goalInput').value.trim();
+            const provider = document.getElementById('providerSelect').value;
+            const providerConfigured = provider && state.capabilities.providers[provider]?.configured;
+            const isTaskMode = state.selectedMode === 'task';
+            const taskSelected = isTaskMode && document.getElementById('taskSelect').value;
+
+            btn.disabled = !state.selectedMode || !provider || !providerConfigured || (isTaskMode && !taskSelected);
+        }
+
+        function setupUploadHandler() {
+            const dropZone = document.getElementById('uploadArea');
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.style.display = 'none';
+
+            input.addEventListener('change', (e) => {
+                handleFileSelect(e.target.files);
+            });
+
+            dropZone.addEventListener('click', () => input.click());
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handleFileSelect(e.dataTransfer.files);
+            });
+
+            document.body.appendChild(input);
+        }
+
+        function handleFileSelect(files) {
+            Array.from(files).forEach(file => {
+                state.uploadedFiles.push(file);
+            });
+            renderFileList();
+        }
+
+        function renderFileList() {
+            const list = document.getElementById('fileList');
+            list.innerHTML = '';
+            state.uploadedFiles.forEach((file, idx) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <i class="fas fa-file"></i>
+                    <span class="file-item-name">${file.name}</span>
+                    <button class="file-item-remove" onclick="removeFile(${idx})">Remove</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function removeFile(idx) {
+            state.uploadedFiles.splice(idx, 1);
+            renderFileList();
+        }
+
+        async function runAgent() {
+            const provider = document.getElementById('providerSelect').value;
+            const goal = document.getElementById('goalInput').value.trim();
+            const mode = state.selectedMode;
+            const taskId = mode === 'task' ? document.getElementById('taskSelect').value : null;
+
+            if (!provider || !mode || (mode === 'task' && !taskId)) {
+                alert('Please select a provider' + (mode === 'task' ? ' and task' : ''));
+                return;
+            }
+
+            // Check provider configured
+            const providerInfo = state.capabilities.providers[provider];
+            if (!providerInfo.configured && provider !== 'mock') {
+                alert(`Provider "${provider}" is not configured. Please set required API keys.`);
+                return;
+            }
+
+            const output = document.getElementById('outputContainer');
+            output.innerHTML = '<div class="loading"><div class="spinner"></div><span class="loading-text">Processing...</span></div>';
+            setBackButtonVisibility(false);
+            state.viewingPreviousRun = false;
+
+            try {
+                const formData = new FormData();
+                formData.append('provider', provider);
+                formData.append('mode', mode);
+                formData.append('goal', goal);
+                if (taskId) formData.append('task_id', taskId);
+
+                state.uploadedFiles.forEach(file => {
+                    formData.append('files', file);
+                });
+
+                const res = await fetch('/run', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await parseJsonResponse(res);
+
+                if (res.ok && data.success) {
+                    state.liveResultData = data;
+                    renderResults(data);
+                    document.getElementById('downloadBtn').style.display = 'inline-block';
+                } else {
+                    output.innerHTML = `<div class="output-empty"><i class="fas fa-exclamation-circle"></i><h4>Error</h4><p>${escapeHtml(data.error || data.message || 'Failed to run agent')}</p></div>`;
+                }
+            } catch (error) {
+                output.innerHTML = `<div class="output-empty"><i class="fas fa-exclamation-circle"></i><h4>Error</h4><p>${escapeHtml(error.message)}</p></div>`;
+            }
+        }
+
+        function renderResults(data) {
+            const output = document.getElementById('outputContainer');
+            output.innerHTML = '';
+
+            // Show workflow status bar (Git branch + PR info)
+            if (data.git || data.pr) {
+                const workflow = document.createElement('div');
+                workflow.className = 'workflow-status';
+                let steps = '';
+
+                // Step indicators
+                const phases = [
+                    { label: 'Plan', icon: 'fa-clipboard-list', done: true },
+                    { label: 'Architect', icon: 'fa-drafting-compass', done: true },
+                    { label: 'Develop', icon: 'fa-code', done: true },
+                    { label: 'Test', icon: 'fa-vial', done: true },
+                    { label: 'Git Commit', icon: 'fa-code-branch', done: data.git && data.git.success },
+                    { label: 'PR Created', icon: 'fa-code-merge', done: data.pr && data.pr.success },
+                    { label: 'Review', icon: 'fa-user-check', done: false },
+                ];
+
+                steps = phases.map(p => `
+                    <div class="workflow-step ${p.done ? 'done' : ''}">
+                        <i class="fas ${p.icon}"></i>
+                        <span>${p.label}</span>
+                    </div>
+                `).join('<div class="workflow-arrow"><i class="fas fa-arrow-right"></i></div>');
+
+                let details = '';
+                if (data.git && data.git.branch) {
+                    details += `<div class="workflow-detail"><i class="fas fa-code-branch"></i> Branch: <strong>${escapeHtml(data.git.branch)}</strong></div>`;
+                }
+                if (data.pr && data.pr.url) {
+                    details += `<div class="workflow-detail"><i class="fas fa-external-link-alt"></i> PR: <a href="${escapeHtml(data.pr.url)}" target="_blank" rel="noopener">#${data.pr.number}</a> — Awaiting human review</div>`;
+                }
+                if (data.git && data.git.files_committed && data.git.files_committed.length) {
+                    details += `<div class="workflow-detail"><i class="fas fa-file-code"></i> ${data.git.files_committed.length} files committed to repo</div>`;
+                }
+
+                workflow.innerHTML = `
+                    <div class="workflow-title"><i class="fas fa-project-diagram"></i> SDLC Workflow Pipeline</div>
+                    <div class="workflow-steps">${steps}</div>
+                    ${details ? '<div class="workflow-details">' + details + '</div>' : ''}
+                `;
+                output.appendChild(workflow);
+            }
+
+            // Show stats if code files
+            if (data.files && data.files.length > 0) {
+                const totalLines = data.files.reduce((sum, f) => sum + (f.lines || 0), 0);
+                const totalSize = data.files.reduce((sum, f) => sum + (f.size || 0), 0);
+                const stats = document.createElement('div');
+                stats.className = 'stats-row';
+                stats.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-label">Files</div>
+                        <div class="stat-value">${data.files.length}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Lines</div>
+                        <div class="stat-value">${totalLines}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Size</div>
+                        <div class="stat-value">${formatBytes(totalSize)}</div>
+                    </div>
+                `;
+                output.appendChild(stats);
+            }
+
+            // Show explanation if present
+            if (data.explanation) {
+                const block = document.createElement('div');
+                block.className = 'explanation-block';
+                block.innerHTML = `
+                    <div class="explanation-title">Explanation</div>
+                    <div class="explanation-content">${escapeHtml(data.explanation)}</div>
+                `;
+                output.appendChild(block);
+            }
+
+            // Show code files
+            if (data.files && data.files.length > 0) {
+                const filesDiv = document.createElement('div');
+                filesDiv.className = 'code-files';
+                data.files.forEach(file => {
+                    const block = document.createElement('div');
+                    block.className = 'code-block';
+                    const icon = getFileIcon(file.name);
+                    block.innerHTML = `
+                        <div class="code-block-header">
+                            <div class="code-block-title">
+                                <i class="fas ${icon}"></i>
+                                <span class="code-block-name">${file.name}</span>
+                                <span class="code-block-size">${formatBytes(file.size)}</span>
+                            </div>
+                        </div>
+                        <div class="code-content">
+                            <pre><code class="language-${getLanguage(file.name)}">${escapeHtml(file.content)}</code></pre>
+                        </div>
+                    `;
+                    filesDiv.appendChild(block);
+                });
+                output.appendChild(filesDiv);
+                Prism.highlightAllUnder(output);
+            }
+
+            if (!data.explanation && (!data.files || data.files.length === 0) && !(data.git || data.pr)) {
+                output.innerHTML = '<div class="output-empty"><i class="fas fa-inbox"></i><h4>No Output</h4><p>Run completed but no code was generated</p></div>';
+            }
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                py: 'fa-python', js: 'fa-js-square', ts: 'fa-js-square', tsx: 'fa-react',
+                jsx: 'fa-react', json: 'fa-code', html: 'fa-html5', css: 'fa-css3-alt'
+            };
+            return 'fa-file-' + (icons[ext] || 'code');
+        }
+
+        function getLanguage(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const langs = { py: 'python', ts: 'typescript', tsx: 'typescript', jsx: 'javascript' };
+            return langs[ext] || ext;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
+        }
+
+        function downloadResults() {
+            alert('Download feature coming soon!');
+        }
+
+        // Event listeners
+        document.getElementById('goalInput').addEventListener('input', updateRunButton);
+        document.getElementById('providerSelect').addEventListener('change', () => {
+            updateModeAvailability();
+            updateRunButton();
+        });
+        document.getElementById('taskSelect').addEventListener('change', updateRunButton);
+        document.getElementById('runBtn').addEventListener('click', runAgent);
+        document.getElementById('backToCurrentBtn').addEventListener('click', backToCurrentView);
+
+        // Bootstrap on page load
+        bootstrap();
+    </script>
+</body>
+</html>
